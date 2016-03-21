@@ -1,6 +1,8 @@
 #!/usr/bin/python
 #encoding=utf8
 
+# @todo: Lógica para obtener PLU base
+# @todo: Lógica pra procesar material con N UMs (tomar mayor cantidad para calcular precio)
 import sys
 
 class QuantidadeAtacadoNaoDefinida(Exception):
@@ -69,6 +71,12 @@ def get_quantidade_caixa():
     raise Exception(u'Ainda não definido de onde obter as quantidades das caixas dos produtos.')
 
 def nova_linea_atacado_12(quantidades_atacado, reg_12_unidade, reg_12_caixa, reg_10_caixa):
+
+    plu = reg_12_unidade[PLU]
+    material = get_material_plu(plu)
+
+    if material not in quantidades_atacado:
+        raise QuantidadeAtacadoNaoDefinida()
     
     quantidade_caixa = int(reg_10_caixa[QUANTIDADE_CAIXA][:-3])
     preco_caixa = int(reg_12_caixa[PRECO])
@@ -102,9 +110,14 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
                         um_plu = get_um_plu(reg[PLU])
                         if um_plu == '00':
                             reg_12_unidade = reg
+                            linea_atacado_12 = nova_linea_atacado_12(quantidades_atacado, reg_12_unidade, reg_12_caixa, reg_10_caixa)
+                            empoatac_file.write(line)
+                            empoatac_file.write(linea_atacado_12)
                         elif um_plu == '01':
                             reg_12_caixa = reg
-                        empoatac_file.write(line)
+                            empoatac_file.write(line)
+                        else:
+                            empoatac_file.write(line)
                     else:
                         linea_atacado = reg_to_linea_atacado(quantidades_atacado, reg)
                         empoatac_file.write(linea_atacado)
@@ -112,9 +125,6 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
                     if tipo_reg == '10' and reg[UM] == 'CX':
                         reg_10_caixa = reg
                     elif reg_12_unidade is not None:
-                        # @todo Ver de onde obter o preco e a quantidade da caixa
-                        linea_atacado_12 = nova_linea_atacado_12(quantidades_atacado, reg_12_unidade, reg_12_caixa, reg_10_caixa)
-                        empoatac_file.write(linea_atacado_12)
                         reg_10_caixa = None
                         reg_12_unidade = None
                         reg_12_caixa = None
