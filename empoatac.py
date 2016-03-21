@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #encoding=utf8
 
+import sys
 
 class QuantidadeAtacadoNaoDefinida(Exception):
     pass
