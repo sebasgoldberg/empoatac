@@ -58,7 +58,22 @@ class EmpoAtacTestCase(unittest.TestCase):
 
         os.remove(loja801_new)
 
+    def test_multiplos_embalagens(self):
 
+        grande = 'testdata/grande'
+        grande_new = 'testdata/grande.new'
+        grande_expected = 'testdata/grande.expected'
+
+        try:
+            os.remove(grande_new)
+        except OSError:
+            pass
+        
+        empoatac.empoatac('testdata/quantidades_atacado.txt', [grande])
+
+        self.assertTrue(filecmp.cmp(grande_new, grande_expected))
+
+        os.remove(grande_new)
 
 
 if __name__ == '__main__':

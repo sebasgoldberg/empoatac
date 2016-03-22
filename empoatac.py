@@ -59,11 +59,11 @@ def reg_to_linea_atacado(quantidades_atacado, plus, reg):
 
     if plu.is_base():
         try:
-            quantidade_atacado = quantidades_atacado[material] 
+            quantidade_atacado = quantidades_atacado[material]
         except KeyError:
             raise QuantidadeAtacadoNaoDefinida()
 
-        reg[QUANTIDADE_ATACADO] = quantidade_atacado
+        reg[QUANTIDADE_ATACADO] = quantidade_atacado + '000'
         
     return '|'.join(reg)
 
@@ -109,11 +109,14 @@ class Plus():
                 for contenedor in self.contenedores_por_base[plu.plu]:
                     plu.set_contenedor(contenedor)
         else:
+
             plu_base = plu.get_plu_base()
             if plu_base not in self.contenedores_por_base:
                 self.contenedores_por_base[plu_base] = [ plu ]
             else:
                 self.contenedores_por_base[plu_base].append(plu)
+
+            if plu_base in self.plus:
                 self.plus[plu_base].set_contenedor(plu)
 
     def get_plu(self, plu_id):
@@ -140,7 +143,7 @@ class Plu():
     def set_contenedor(self, plu):
         if self.contenedor is None:
             self.contenedor = plu
-        elif self.contenedor.get_quantidade_conteudo() < plu.get_quantidade_conteudo():
+        elif self.contenedor.get_quantidade() < plu.get_quantidade():
             self.contenedor = plu
 
     def get_contenedor(self):
