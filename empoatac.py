@@ -10,33 +10,6 @@ class QuantidadeAtacadoNaoDefinida(Exception):
 class PluNaoEBase(Exception):
     pass
 
-def get_quantidades_atacado(quan_filename):
-
-    MATERIAL = 0
-    QUANTIDADE = 1
-
-    quantidades_atacado = {}
-
-    with open(quan_filename, 'r') as quan_file:
-        for line in quan_file:
-            reg = line.strip().split('\t')
-            for i in range(len(reg)):
-                reg[i] = reg[i].strip()
-            # @todo Verificar si tem loja
-            #loja = reg[LOJA]
-            material = reg[MATERIAL]
-            quantidade = reg[QUANTIDADE]
-            """
-            if loja not in quantidades_atacado:
-                quantidades_atacado[loja] = {material: quantidade}
-            else:
-                quantidades_atacado[loja][material] = quantidade
-                """
-            quantidades_atacado[material] = quantidade
-
-    return quantidades_atacado
-
-
 TIPO_REG = 1
 QUANTIDADE_ATACADO = 26
 PLU = 3
@@ -47,49 +20,6 @@ QUANTIDADE_CAIXA = 55
 PLU_10 = 2
 PLU_BASE = 3
 
-def get_material_plu(plu):
-    return plu[:-2]
-
-def get_um_plu(plu):
-    return plu[-2:]
-
-def reg_to_linea_atacado(quantidades_atacado, plus, reg):
-    plu = plus.get_plu(reg[PLU])
-    material = get_material_plu(plu.plu)
-
-    if plu.is_base():
-        try:
-            quantidade_atacado = quantidades_atacado[material]
-        except KeyError:
-            raise QuantidadeAtacadoNaoDefinida()
-
-        reg[QUANTIDADE_ATACADO] = quantidade_atacado + '000'
-        
-    return '|'.join(reg)
-
-
-def get_quantidade_caixa():
-    raise Exception(u'Ainda não definido de onde obter as quantidades das caixas dos produtos.')
-
-def nova_linea_atacado_12(quantidades_atacado, plu):
-
-    if not plu.is_base():
-        raise PluNaoEBase()
-
-    material = get_material_plu(plu.plu)
-
-    if material not in quantidades_atacado:
-        raise QuantidadeAtacadoNaoDefinida()
-    
-    plu_contenedor = plu.get_contenedor()
-    quantidade_caixa = plu_contenedor.get_quantidade()
-    preco_caixa = plu_contenedor.get_preco() 
-    preco_atacado_unidade = preco_caixa / quantidade_caixa
-    
-    plu.reg_12[PRECO] = str(preco_atacado_unidade).strip()
-    plu.reg_12[TIPO_REG_12] = '2'
-
-    return '|'.join(plu.reg_12)
 
 class Plus():
     
@@ -155,6 +85,65 @@ class Plu():
     def get_preco(self):
         return int(self.reg_12[PRECO])
 
+    def get_material(self):
+        return self.plu[:-2]
+
+
+def get_quantidades_atacado(quan_filename):
+
+    MATERIAL = 0
+    QUANTIDADE = 1
+
+    quantidades_atacado = {}
+
+    with open(quan_filename, 'r') as quan_file:
+        for line in quan_file:
+            reg = line.strip().split('\t')
+            for i in range(len(reg)):
+                reg[i] = reg[i].strip()
+            material = reg[MATERIAL]
+            quantidade = reg[QUANTIDADE]
+            quantidades_atacado[material] = quantidade
+
+    return quantidades_atacado
+
+
+def nova_linea_atacado_12(quantidades_atacado, plu):
+
+    if not plu.is_base():
+        raise PluNaoEBase()
+
+    material = plu.get_material()
+
+    if material not in quantidades_atacado:
+        raise QuantidadeAtacadoNaoDefinida()
+    
+    plu_contenedor = plu.get_contenedor()
+    quantidade_caixa = plu_contenedor.get_quantidade()
+    preco_caixa = plu_contenedor.get_preco() 
+    preco_atacado_unidade = preco_caixa / quantidade_caixa
+    
+    plu.reg_12[PRECO] = str(preco_atacado_unidade).strip()
+    plu.reg_12[TIPO_REG_12] = '2'
+
+    return '|'.join(plu.reg_12)
+
+
+def reg_11_to_atacado(quantidades_atacado, plus, reg):
+    plu = plus.get_plu(reg[PLU])
+    material = plu.get_material()
+
+    if plu.is_base():
+        try:
+            quantidade_atacado = quantidades_atacado[material]
+        except KeyError:
+            raise QuantidadeAtacadoNaoDefinida()
+
+        reg[QUANTIDADE_ATACADO] = quantidade_atacado + '000'
+        
+    return '|'.join(reg)
+
+
 def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, extencao_novo_arquivo='new'):
     
     empoatac_filename = u'%s.%s' % (empo_filename, extencao_novo_arquivo)
@@ -180,7 +169,7 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
                         else:
                             empoatac_file.write(line)
                     else:
-                        linea_atacado = reg_to_linea_atacado(quantidades_atacado, plus, reg)
+                        linea_atacado = reg_11_to_atacado(quantidades_atacado, plus, reg)
                         empoatac_file.write(linea_atacado)
                 else:
                     if tipo_reg == '10':
