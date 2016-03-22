@@ -1,7 +1,6 @@
 #!/usr/bin/python
 #encoding=utf8
 
-# @todo: Lógica pra procesar material con N UMs (tomar mayor cantidad para calcular precio)
 import sys
 import os
 
