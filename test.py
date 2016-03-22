@@ -75,6 +75,21 @@ class EmpoAtacTestCase(unittest.TestCase):
 
         os.remove(grande_new)
 
+    def test_muito_grande(self):
+
+        muito_grande = 'testdata/muito_grande'
+        muito_grande_new = 'testdata/muito_grande.tmp'
+
+        try:
+            os.remove(muito_grande_new)
+        except OSError:
+            pass
+        
+        empoatac.empoatac('testdata/QtdAtacadoTeste.txt', [muito_grande])
+
+        os.remove(muito_grande_new)
+
+
 
 if __name__ == '__main__':
     unittest.main()

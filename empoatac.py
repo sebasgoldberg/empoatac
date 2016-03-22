@@ -10,6 +10,12 @@ class QuantidadeAtacadoNaoDefinida(Exception):
 class PluNaoEBase(Exception):
     pass
 
+class PluSoTemUnidadeBase(Exception):
+    pass
+
+class RegistroDePrecoNaoEncontrado(Exception):
+    pass
+
 TIPO_REG = 1
 QUANTIDADE_ATACADO = 26
 PLU = 3
@@ -84,10 +90,17 @@ class Plu:
         return int(self.reg_10[QUANTIDADE_CONTEUDO][:-3])
 
     def get_preco(self):
-        return int(self.reg_12[PRECO])
+        try:
+            return int(self.reg_12[PRECO])
+        except AttributeError:
+            print "ERRO: Registro de tipo 12 nao encontrado para PLU %s" % self.plu
+            raise RegistroDePrecoNaoEncontrado()
 
     def get_material(self):
         return self.plu[:-2]
+
+    def tem_contenedor(self):
+        return self.contenedor is not None
 
 
 def get_quantidades_atacado(quan_filename):
@@ -115,13 +128,16 @@ def get_quantidades_atacado(quan_filename):
 
 def nova_linea_atacado_12(quantidades_atacado, plu):
 
-    if not plu.is_base():
-        raise PluNaoEBase()
-
     material = plu.get_material()
 
     if material not in quantidades_atacado:
         raise QuantidadeAtacadoNaoDefinida()
+
+    if not plu.is_base():
+        raise PluNaoEBase()
+
+    if not plu.tem_contenedor():
+        raise PluSoTemUnidadeBase()
     
     plu_contenedor = plu.get_contenedor()
     quantidade_caixa = plu_contenedor.get_quantidade()
@@ -138,7 +154,14 @@ def reg_11_to_atacado(quantidades_atacado, plus, reg):
     plu = plus.get_plu(reg[PLU])
     material = plu.get_material()
 
+    if material not in quantidades_atacado:
+        raise QuantidadeAtacadoNaoDefinida()
+
     if plu.is_base():
+
+        if not plu.tem_contenedor():
+            raise PluSoTemUnidadeBase()
+
         try:
             quantidade_atacado = quantidades_atacado[material]
         except KeyError:
@@ -188,6 +211,12 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
 
             except QuantidadeAtacadoNaoDefinida:
                 empoatac_file.write(line)
+            except PluSoTemUnidadeBase:
+                empoatac_file.write(line)
+                print u'WARNING: PLU %s so tem unidade base definida no arquivo de precos. Nao e possivel definir quantidade atacado.' % plu.plu
+            except RegistroDePrecoNaoEncontrado:
+                empoatac_file.write(line)
+                
 
     finally:
         empo_file.close()
