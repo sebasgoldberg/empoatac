@@ -3,6 +3,7 @@
 
 # @todo: Lógica pra procesar material con N UMs (tomar mayor cantidad para calcular precio)
 import sys
+import os
 
 class QuantidadeAtacadoNaoDefinida(Exception):
     pass
@@ -20,6 +21,7 @@ QUANTIDADE_CAIXA = 55
 PLU_10 = 2
 PLU_BASE = 3
 
+EXTENCAO = 'tmp'
 
 class Plus():
     
@@ -144,7 +146,7 @@ def reg_11_to_atacado(quantidades_atacado, plus, reg):
     return '|'.join(reg)
 
 
-def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, extencao_novo_arquivo='new'):
+def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, extencao_novo_arquivo=EXTENCAO):
     
     empoatac_filename = u'%s.%s' % (empo_filename, extencao_novo_arquivo)
 
@@ -182,7 +184,7 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
                 empoatac_file.write(line)
 
 
-def empoatac(quan_filename, empo_filenames):
+def empoatac(quan_filename, empo_filenames, mudar_original=False):
 
     quantidades_atacado = get_quantidades_atacado(quan_filename)
 
@@ -190,8 +192,9 @@ def empoatac(quan_filename, empo_filenames):
         convert_emporium_to_emporium_atacado(
             quantidades_atacado,
             empo_filename,
-            'new'
             )
+        if mudar_original:
+            os.rename('%s.%s' % (empo_filename, EXTENCAO), empo_filename )
 
 if __name__ == '__main__':
-    empoatac(sys.argv[1], sys.argv[2:])
+    empoatac(sys.argv[1], sys.argv[2:], mudar_original=True)

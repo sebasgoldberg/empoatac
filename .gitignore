@@ -30,3 +30,5 @@ vendor
 familiasskus.*.json
 *.sql
 backup/*
+procesados/*
+*.tmp

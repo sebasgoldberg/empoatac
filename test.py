@@ -11,8 +11,8 @@ class EmpoAtacTestCase(unittest.TestCase):
     def test_empoatac(self):
 
         loja999 = 'testdata/loja999'
-        loja999_new = 'testdata/loja999.new'
-        loja999_new_expected = 'testdata/loja999.new.expected'
+        loja999_new = 'testdata/loja999.tmp'
+        loja999_new_expected = 'testdata/loja999.expected'
 
         try:
             os.remove(loja999_new)
@@ -28,7 +28,7 @@ class EmpoAtacTestCase(unittest.TestCase):
     def test_mesmo_arquivo(self):
 
         loja999 = 'testdata/loja999'
-        loja999_new = 'testdata/loja999.new'
+        loja999_new = 'testdata/loja999.tmp'
 
         try:
             os.remove(loja999_new)
@@ -44,8 +44,8 @@ class EmpoAtacTestCase(unittest.TestCase):
     def test_multiplos_materiais(self):
 
         loja801 = 'testdata/loja801'
-        loja801_new = 'testdata/loja801.new'
-        loja801_new_expected = 'testdata/loja801.new.expected'
+        loja801_new = 'testdata/loja801.tmp'
+        loja801_new_expected = 'testdata/loja801.expected'
 
         try:
             os.remove(loja801_new)
@@ -61,7 +61,7 @@ class EmpoAtacTestCase(unittest.TestCase):
     def test_multiplos_embalagens(self):
 
         grande = 'testdata/grande'
-        grande_new = 'testdata/grande.new'
+        grande_new = 'testdata/grande.tmp'
         grande_expected = 'testdata/grande.expected'
 
         try:
