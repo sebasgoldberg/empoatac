@@ -17,7 +17,7 @@ PLU = 3
 PRECO = 4
 TIPO_REG_12 = 7
 UM = 13
-QUANTIDADE_CAIXA = 55
+QUANTIDADE_CONTEUDO = 55
 PLU_10 = 2
 PLU_BASE = 3
 
@@ -82,7 +82,7 @@ class Plu():
         return self.contenedor
 
     def get_quantidade(self):
-        return int(self.reg_10[QUANTIDADE_CAIXA][:-3])
+        return int(self.reg_10[QUANTIDADE_CONTEUDO][:-3])
 
     def get_preco(self):
         return int(self.reg_12[PRECO])
