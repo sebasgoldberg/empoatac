@@ -22,7 +22,7 @@ PLU_BASE = 3
 
 EXTENCAO = 'tmp'
 
-class Plus():
+class Plus:
     
     def __init__(self):
         
@@ -54,7 +54,7 @@ class Plus():
         return self.plus[plu_id]
 
 
-class Plu():
+class Plu:
     
     def __init__(self, reg_10, plus):
         self.reg_10 = reg_10
@@ -97,7 +97,9 @@ def get_quantidades_atacado(quan_filename):
 
     quantidades_atacado = {}
 
-    with open(quan_filename, 'r') as quan_file:
+    quan_file = open(quan_filename, 'r')
+
+    try:
         for line in quan_file:
             reg = line.strip().split('\t')
             for i in range(len(reg)):
@@ -105,6 +107,8 @@ def get_quantidades_atacado(quan_filename):
             material = reg[MATERIAL]
             quantidade = reg[QUANTIDADE]
             quantidades_atacado[material] = quantidade
+    finally:
+        quan_file.close()
 
     return quantidades_atacado
 
@@ -151,7 +155,10 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
 
     plus = Plus()
 
-    with open(empo_filename, 'r') as empo_file, open(empoatac_filename, 'w') as empoatac_file:
+    empo_file = open(empo_filename, 'r')
+    empoatac_file = open(empoatac_filename, 'w')
+
+    try:
         
         for line in empo_file:
             reg = line.split('|')
@@ -181,6 +188,11 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
 
             except QuantidadeAtacadoNaoDefinida:
                 empoatac_file.write(line)
+
+    finally:
+        empo_file.close()
+        empoatac_file.close()
+            
 
 
 def empoatac(quan_filename, empo_filenames, mudar_original=False):
