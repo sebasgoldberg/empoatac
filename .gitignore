@@ -32,4 +32,5 @@ familiasskus.*.json
 backup/*
 procesados/*
 *.tmp
-erro/
+erro*/
+venv

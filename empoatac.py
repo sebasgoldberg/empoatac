@@ -144,7 +144,7 @@ def nova_linea_atacado_12(quantidades_atacado, plu):
     preco_caixa = plu_contenedor.get_preco() 
     preco_atacado_unidade = preco_caixa / quantidade_caixa
     
-    plu.reg_12[PRECO] = str(preco_atacado_unidade).strip()
+    plu.reg_12[PRECO] = str(preco_atacado_unidade).strip().zfill(4)
     plu.reg_12[TIPO_REG_12] = '2'
 
     return '|'.join(plu.reg_12)
@@ -190,8 +190,8 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
             try:
 
                 if tipo_reg in ['11', '12']:
+                    plu = plus.get_plu(reg[PLU])
                     if tipo_reg == '12':
-                        plu = plus.get_plu(reg[PLU])
                         plu.set_reg_12(reg)
                         if plu.is_base():
                             linea_atacado_12 = nova_linea_atacado_12(quantidades_atacado, plu)
