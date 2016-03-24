@@ -144,7 +144,7 @@ def nova_linea_atacado_12(quantidades_atacado, plu):
     preco_caixa = plu_contenedor.get_preco() 
     preco_atacado_unidade = preco_caixa / quantidade_caixa
     
-    plu.reg_12[PRECO] = str(preco_atacado_unidade).strip().zfill(4)
+    plu.reg_12[PRECO] = str(preco_atacado_unidade).strip().zfill(4)[:-1]+'0'
     plu.reg_12[TIPO_REG_12] = '2'
 
     return '|'.join(plu.reg_12)
