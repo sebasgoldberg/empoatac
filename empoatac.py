@@ -25,6 +25,13 @@ UM = 13
 QUANTIDADE_CONTEUDO = 55
 PLU_10 = 2
 PLU_BASE = 3
+PLU_19 = 3
+PLU_BASE_19 = 2
+PLU_11 = 3
+PLU_BASE_11 = 32
+PLU_BASE_TEM_FILHOS_11 = 34
+
+BASE_NO_11 = False
 
 EXTENCAO = 'tmp'
 
@@ -173,7 +180,7 @@ def reg_11_to_atacado(quantidades_atacado, plus, reg):
 
 
 def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, extencao_novo_arquivo=EXTENCAO):
-    
+
     empoatac_filename = u'%s.%s' % (empo_filename, extencao_novo_arquivo)
 
     plus = Plus()
@@ -221,20 +228,114 @@ def convert_emporium_to_emporium_atacado(quantidades_atacado, empo_filename, ext
     finally:
         empo_file.close()
         empoatac_file.close()
-            
+
+def convert_19_to_10_11(empo_filename):
+
+    empo_file = open(empo_filename, 'r')
+
+    lines = []
+    plu_base = {}
+    plu_base_tem_filhos = {}
+
+    try:
+
+        for line in reversed(empo_file.readlines()):
+
+            reg = line.split('|')
+            tipo_reg = reg[TIPO_REG]
+
+            if tipo_reg == '10':
+                try:
+                    reg[PLU_BASE] = plu_base[reg[PLU_10]]
+                except KeyError:
+                    pass
+                lines.append('|'.join(reg))
+            elif BASE_NO_11 and tipo_reg == '11':
+                try:
+                    reg[PLU_BASE_11] = plu_base[reg[PLU_11]]
+                except KeyError:
+                    try:
+                        if plu_base_tem_filhos[reg[PLU_11]] == True:
+                            reg[PLU_BASE_TEM_FILHOS_11] = '1'
+                    except KeyError:
+                        pass
+                lines.append('|'.join(reg))
+            elif tipo_reg == '19':
+                plu_base[reg[PLU_19]] = reg[PLU_BASE_19]
+                plu_base_tem_filhos[reg[PLU_BASE_19]] = True
+                lines.append(line)
+            else:
+                lines.append(line)
+
+    finally:
+        empo_file.close()
+
+    # Criamos o novo arquivo com o PLU base dos registros 10 preenchidos.
+
+    empo19to10_filename = u'%s.%s' % (empo_filename, EXTENCAO)
+
+    empo19to10_file = open(empo19to10_filename, 'w')
+
+    for line in reversed(lines):
+        empo19to10_file.write(line)
+
+    empo19to10_file.close()
+
+    os.rename(empo19to10_filename, empo_filename )
 
 
-def empoatac(quan_filename, empo_filenames, mudar_original=False):
+def remove_plu_base_10(empo_filename):
+
+    empo_sem_plu_base_10_filename = u'%s.%s' % (empo_filename, EXTENCAO)
+
+    empo_file = open(empo_filename, 'r')
+    empo_sem_plu_base_10_file = open(empo_sem_plu_base_10_filename, 'w')
+
+    try:
+
+        for line in empo_file:
+
+            reg = line.split('|')
+            tipo_reg = reg[TIPO_REG]
+
+            if tipo_reg == '10':
+                reg[PLU_BASE] = ' '
+                empo_sem_plu_base_10_file.write('|'.join(reg))
+            else:
+                empo_sem_plu_base_10_file.write(line)
+
+    finally:
+        empo_file.close()
+        empo_sem_plu_base_10_file.close()
+
+    os.rename(empo_sem_plu_base_10_filename, empo_filename )
+
+
+def empoatac(quan_filename, empo_filenames, mudar_original=False, fix_base_no_10=False):
 
     quantidades_atacado = get_quantidades_atacado(quan_filename)
 
     for empo_filename in empo_filenames:
+        if fix_base_no_10:
+            convert_19_to_10_11(
+                empo_filename
+            )
         convert_emporium_to_emporium_atacado(
             quantidades_atacado,
             empo_filename,
             )
         if mudar_original:
             os.rename('%s.%s' % (empo_filename, EXTENCAO), empo_filename )
+        if fix_base_no_10:
+            remove_plu_base_10(
+                empo_filename
+            )
 
 if __name__ == '__main__':
-    empoatac(sys.argv[1], sys.argv[2:], mudar_original=True)
+    if sys.argv[2] == '--BASE_NO_11':
+        BASE_NO_11 = True
+        index_argv_files = 3
+    else:
+        index_argv_files = 2
+
+    empoatac(sys.argv[1], sys.argv[index_argv_files:], mudar_original=True, fix_base_no_10=True)

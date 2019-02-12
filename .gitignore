@@ -34,3 +34,4 @@ procesados/*
 *.tmp
 erro*/
 venv
+*.un~
